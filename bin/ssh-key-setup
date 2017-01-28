@@ -1,0 +1,56 @@
+#!/usr/bin/env sh
+
+APPNAME="$(basename $0)"
+APPVERSION=1.0.0
+
+usage() {
+  echo "Usage: $APPNAME [OPTION]... PRIVATE_KEY [KNOWN_HOSTS]"
+  echo "Setup ssh client PRIVATE_KEY and optionally set additional KNOWN_HOSTS"
+  echo
+  echo "Options:"
+  echo "      --help     display this help and exit"
+  echo "      --version  output version information and exit"
+}
+
+# Parse options
+while :
+do
+    case $1 in
+        -h | --help | -\?)
+            usage
+            exit                # This is not an error, User asked help. We clean_exit
+            ;;
+        --version)
+            echo "$APPNAME $APPVERSION"
+            exit
+            ;;
+        --) # End of all options
+            shift
+            break
+            ;;
+        *)  # no more options. Stop while loop
+            break
+            ;;
+    esac
+done
+
+PRIVATE_KEY="$1"
+KNOWN_HOSTS="$2"
+
+# Args check
+if [[ -z "$PRIVATE_KEY" ]]; then
+  echo 'PRIVATE_KEY is required'
+  echo
+  usage
+  exit 1
+fi
+
+# Main loop
+mkdir -pm 700 ~/.ssh
+
+if [[ ! -z "$KNOWN_HOSTS" ]]; then
+  echo "$KNOWN_HOSTS" >> ~/.ssh/known_hosts
+fi
+
+install -m 600 /dev/null ~/.ssh/id_ecdsa && \
+  echo "$PRIVATE_KEY" > ~/.ssh/id_ecdsa
